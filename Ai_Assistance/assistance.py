@@ -272,7 +272,7 @@ engine = pyttsx3.init()
 # Set up Jarvis voice (editable)
 def set_jarvis_voice(rate=150, volume=1.0):
     voices = engine.getProperty('voices')
-    engine.setProperty('voice', voices[1].id)  # Female voice (change index for male/female)
+    engine.setProperty('voice', voices[0].id)  # Female voice (change index for male/female)
     engine.setProperty('rate', rate)  # Speed of speech
     engine.setProperty('volume', volume)  # Volume (0.0 to 1.0)
 
@@ -339,7 +339,7 @@ def notify_task_started(task):
     notification.notify(
         title="Task Started",
         message=f"Starting task: {task}",
-        timeout=5
+        timeout=10
     )
 
 def notify_task_completed(task):
