@@ -123,8 +123,8 @@ def execute_command(command):
         query = command.replace("search google", "").strip()
         webbrowser.open(f"https://www.google.com/search?q={query}")
         speak(f"Searching Google for {query}.")
-    elif "play song" in command:
-        query = command.replace("play song", "").strip()
+    elif "play" in command:
+        query = command.replace("play", "").strip()
         try:
             pywhatkit.playonyt(query)
             speak(f"Playing {query} on YouTube.")
