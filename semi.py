@@ -17,15 +17,13 @@ from threading import Thread
 # Initialize voice engine
 engine = pyttsx3.init()
 
-# Configure voice settings
 def configure_voice():
     voices = engine.getProperty('voices')
-    engine.setProperty('voice', voices[0].id)  # Use male voice
-    engine.setProperty('rate', 150)
+    engine.setProperty('voice', voices[0].id)  # Male voice
+    engine.setProperty('rate', 150)  # Set speed
 
 configure_voice()
 
-# Speak function
 def speak(text):
     engine.say(text)
     engine.runAndWait()
@@ -33,7 +31,7 @@ def speak(text):
 # Global variables
 user_name = ""
 
-# Log and update the terminal
+# Log updates to terminal GUI
 def update_terminal(message):
     terminal_area.config(state=tk.NORMAL)
     terminal_area.insert(tk.END, f"{message}\n")
@@ -71,12 +69,10 @@ def take_command():
     recognizer = sr.Recognizer()
     with sr.Microphone() as source:
         update_status("Listening...", "blue")
-        recognizer.pause_threshold = 1
         try:
             audio = recognizer.listen(source)
             update_status("Recognizing...", "yellow")
             command = recognizer.recognize_google(audio, language='en-US')
-            # update_terminal(f"You said: {command}")
         except sr.UnknownValueError:
             update_terminal("Sorry, I didn't catch that. Please repeat.")
             return ""
@@ -92,15 +88,17 @@ def update_status(message, color):
 # Handle voice commands
 def execute_command(command):
     global user_name
-
+    
     if 'my name is' in command:
         user_name = command.replace('my name is', '').strip().capitalize()
         update_terminal(f"Hello, {user_name}! Nice to meet you.")
+
     elif 'what is my name' in command:
         if user_name:
             update_terminal(f"Your name is {user_name}.")
         else:
             update_terminal("I don't know your name yet. Please tell me by saying 'My name is ...'.")
+
     elif 'open file' in command:
         speak("Which file should I open?")
         file_name = take_command()
@@ -109,11 +107,6 @@ def execute_command(command):
             update_terminal(f"Opening file: {file_name}")
         else:
             update_terminal(f"File not found: {file_name}")
-    elif "how are you" in command:
-        speak("I'm doing great, thank you for asking. How about you?")
-
-    elif "what is your name" in command:
-        speak(" My name is Jarvis. I am your speech assistant.")   
 
     elif 'open folder' in command:
         speak("Which folder should I open?")
@@ -123,44 +116,43 @@ def execute_command(command):
             update_terminal(f"Opening folder: {folder_name}")
         else:
             update_terminal(f"Folder not found: {folder_name}")
+
     elif 'time' in command:
         current_time = datetime.datetime.now().strftime('%I:%M %p')
         update_terminal(f"The current time is {current_time}.")
+
     elif 'search wikipedia' in command:
         query = command.replace('search wikipedia', '').strip()
         update_terminal(f"Searching Wikipedia for {query}...")
         try:
             result = wikipedia.summary(query, sentences=2)
             update_terminal(f"According to Wikipedia: {result}")
-        except Exception as e:
+        except Exception:
             update_terminal("Sorry, no information found.")
+
     elif 'search google' in command:
         query = command.replace('search google', '').strip()
         webbrowser.open(f"https://www.google.com/search?q={query}")
         update_terminal(f"Searching Google for {query}...")
+
     elif 'open' in command:
         website = command.replace('open', '').strip().lower()
-        url = f"{website}" if '.' not in website else website
+        url = f"https://{website}" if '.' not in website else website
         webbrowser.open(url)
         update_terminal(f"Opening website: {url}")
 
-    elif "play" in command:
+    elif 'play' in command:
         query = command.replace("play", "").strip()
-        try:
-            pywhatkit.playonyt(query)
-            speak(f"Playing {query} on YouTube.")
-        except Exception:
-            speak("There was an issue playing the requested song.")
+        pywhatkit.playonyt(query)
+        update_terminal(f"Playing {query} on YouTube.")
 
-            
     elif 'set volume' in command:
         try:
             level = int(command.replace('set volume', '').strip())
             set_volume(level)
         except ValueError:
             update_terminal("Please specify a valid volume level between 0 and 100.")
-    elif 'mute volume' in command or 'mute' in command:
-        set_volume(0)
+
     elif 'exit' in command:
         update_terminal("Goodbye! Have a great day.")
         window.quit()
@@ -181,7 +173,7 @@ window.geometry("900x700")
 window.configure(bg="#0F0F0F")
 
 # Header
-header = tk.Label(window, text="Moueen Togarvi", font=("Courier New", 32, "bold"), fg="lime", bg="#0F0F0F")
+header = tk.Label(window, text="JARVIS Assistant", font=("Courier New", 32, "bold"), fg="lime", bg="#0F0F0F")
 header.pack(pady=10)
 
 # Circular Design
