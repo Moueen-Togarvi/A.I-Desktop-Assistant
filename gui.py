@@ -23,6 +23,22 @@ def configure_voice():
 
 configure_voice()
 
+def take_command():
+    recognizer = sr.Recognizer()
+    with sr.Microphone() as source:
+        print("Listening...")
+        recognizer.pause_threshold = 1
+        try:
+            audio = recognizer.listen(source)
+            print("Recognizing...")
+            command = recognizer.recognize_google(audio, language='en-US')
+            print(f"You said: {command}")
+        except Exception as e:
+            print("Sorry, I didn't catch that. Please repeat.")
+            return ""
+        return command.lower()
+
+
 # Speak function
 def speak(text):
     engine.say(text)
