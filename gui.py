@@ -23,6 +23,10 @@ def configure_voice():
 
 configure_voice()
 
+def speak(text):
+    engine.say(text)
+    engine.runAndWait()
+
 def take_command():
     recognizer = sr.Recognizer()
     with sr.Microphone() as source:
