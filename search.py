@@ -90,8 +90,8 @@ def jarvis():
                 speak("No files found with that name.")
 
         # Play song on YouTube
-        elif 'play song' in command:
-            query = command.replace('play song', '').strip()
+        elif 'play' in command:
+            query = command.replace('play', '').strip()
             speak(f"Playing {query} on YouTube.")
             pywhatkit.playonyt(query)
 
