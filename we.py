@@ -23,7 +23,6 @@ def configure_voice():
 
 configure_voice()
 
-
 # Speak function
 def speak(text):
     engine.say(text)
@@ -40,8 +39,11 @@ def take_command():
             log_message("Recognizing...")
             command = recognizer.recognize_google(audio, language='en-US')
             log_message(f"You said: {command}")
-        except Exception as e:
+        except sr.UnknownValueError:
             log_message("Sorry, I didn't catch that. Please repeat.")
+            return ""
+        except sr.RequestError:
+            log_message("Network error. Please check your internet connection.")
             return ""
         return command.lower()
 
@@ -159,5 +161,3 @@ log_message("Hello! Moeen, I am JARVIS, your personal assistant. How can I help 
 window.after(1000, continuous_listening)
 
 window.mainloop()
-
-
