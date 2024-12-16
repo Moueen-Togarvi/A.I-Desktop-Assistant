@@ -174,7 +174,7 @@ output_box.pack(pady=10)
 output_box.insert(tk.END, "JARVIS is ready. Waiting for your command...\n")
 
 # Start the assistant
-log_message("Hello! I am JARVIS, your personal assistant. Welcome And have a nice  How can I help you?")
+log_message("Hello! Moeen, I am JARVIS, your personal assistant. How can I help you?")
 window.after(1000, continuous_listening)
 
 window.mainloop()
