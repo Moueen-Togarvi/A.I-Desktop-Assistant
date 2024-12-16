@@ -7,7 +7,6 @@ import datetime
 import webbrowser
 import paho.mqtt.client as mqtt
 from cryptography.fernet import Fernet
-import json
 
 # Initialize voice engine
 engine = pyttsx3.init()
@@ -36,22 +35,29 @@ def take_command():
             speak("Recognizing...")
             command = recognizer.recognize_google(audio, language='en-US')
             print(f"You said: {command}")
-        except Exception as e:
-            speak("Sorry, I didn't catch that. Please repeat.")
+        except sr.RequestError:
+            speak("Unable to connect to the recognition service. Check your internet.")
+            return ""
+        except sr.UnknownValueError:
+            speak("Sorry, I couldn't understand that. Please repeat.")
             return ""
         return command.lower()
 
 # IoT MQTT Configuration
-MQTT_BROKER = "broker.hivemq.com"  # Public MQTT Broker (for example purposes)
+MQTT_BROKER = "broker.hivemq.com"  # Public MQTT Broker
 MQTT_PORT = 1883
 MQTT_TOPIC = "home/commands"
 
 client = mqtt.Client()
 
 def connect_to_mqtt():
-    client.connect(MQTT_BROKER, MQTT_PORT, 60)
-    client.loop_start()
-    print("Connected to MQTT broker.")
+    try:
+        client.connect(MQTT_BROKER, MQTT_PORT, 60)
+        client.loop_start()
+        print("Connected to MQTT broker.")
+    except Exception as e:
+        print(f"MQTT connection failed: {e}")
+        speak("Unable to connect to the IoT server.")
 
 def control_iot_device(command):
     if "turn on light" in command:
@@ -97,7 +103,6 @@ AUTHORIZED_VOICE = "YourAuthorizedVoiceSignature"
 
 def authenticate_voice():
     # Placeholder for actual voice authentication logic
-    # Compare user's voice signature with an authorized voice signature
     return True  # Simulated successful authentication
 
 # Command Execution
@@ -120,8 +125,14 @@ def execute_command(command):
         speak(f"Searching Google for {query}.")
     elif "play song" in command:
         query = command.replace("play song", "").strip()
-        pywhatkit.playonyt(query)
-        speak(f"Playing {query} on YouTube.")
+        try:
+            pywhatkit.playonyt(query)
+            speak(f"Playing {query} on YouTube.")
+        except Exception:
+            speak("There was an issue playing the requested song.")
+    elif "exit" in command or "quit" in command:
+        speak("Goodbye!")
+        exit(0)
     else:
         speak("I didn't understand that command. Please try again.")
 
@@ -137,4 +148,12 @@ def jarvis():
     else:
         speak("Authentication failed. Access denied.")
 
-jarvis()
+# Start the Assistant
+if __name__ == "__main__":
+    try:
+        jarvis()
+    except KeyboardInterrupt:
+        speak("Goodbye!")
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        speak("Something went wrong. Please try again later.")
