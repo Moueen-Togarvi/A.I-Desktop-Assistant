@@ -76,7 +76,7 @@ def take_command():
             audio = recognizer.listen(source)
             update_status("Recognizing...", "yellow")
             command = recognizer.recognize_google(audio, language='en-US')
-            update_terminal(f"You said: {command}")
+            # update_terminal(f"You said: {command}")
         except sr.UnknownValueError:
             update_terminal("Sorry, I didn't catch that. Please repeat.")
             return ""
@@ -109,6 +109,12 @@ def execute_command(command):
             update_terminal(f"Opening file: {file_name}")
         else:
             update_terminal(f"File not found: {file_name}")
+    elif "how are you" in command:
+        speak("I'm doing great, thank you for asking. How about you?")
+
+    elif "what is your name" in command:
+        speak(" My name is Jarvis. I am your speech assistant.")   
+
     elif 'open folder' in command:
         speak("Which folder should I open?")
         folder_name = take_command()
@@ -134,9 +140,19 @@ def execute_command(command):
         update_terminal(f"Searching Google for {query}...")
     elif 'open' in command:
         website = command.replace('open', '').strip().lower()
-        url = f"https://{website}.com" if '.' not in website else website
+        url = f"{website}" if '.' not in website else website
         webbrowser.open(url)
         update_terminal(f"Opening website: {url}")
+
+    elif "play" in command:
+        query = command.replace("play", "").strip()
+        try:
+            pywhatkit.playonyt(query)
+            speak(f"Playing {query} on YouTube.")
+        except Exception:
+            speak("There was an issue playing the requested song.")
+
+            
     elif 'set volume' in command:
         try:
             level = int(command.replace('set volume', '').strip())
