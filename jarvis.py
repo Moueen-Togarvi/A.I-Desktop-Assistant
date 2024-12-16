@@ -50,14 +50,21 @@ def jarvis():
             break
 
         # Open a specific file
+        # elif 'open file' in command:
+        #     file_path = "C:\\Users\\YourUserName\\Documents\\example.txt"  # Update with your file path
+        #     os.startfile(file_path)
+        #     speak("Opening the file.")
         elif 'open file' in command:
-            file_path = "C:\\Users\\YourUserName\\Documents\\example.txt"  # Update with your file path
-            os.startfile(file_path)
-            speak("Opening the file.")
-
+            file_name = command.replace('open file', '').strip()  # Extract file name
+            file_path = f"E:\\{file_name}.txt"  # Build path in E:\ drive
+            try:
+                os.startfile(file_path)  # Try opening the file
+                speak(f"Opening file {file_name}")
+            except FileNotFoundError:
+                speak(f"Sorry, I could not find the file {file_name} in the E drive.")
         # Play a song on YouTube
-        elif 'play song' in command:
-            song = command.replace('play song', '')
+        elif 'play' in command:
+            song = command.replace('play ', '')
             pywhatkit.playonyt(song)
             speak(f"Playing {song} on YouTube.")
 
