@@ -23,25 +23,6 @@ def configure_voice():
 
 configure_voice()
 
-def speak(text):
-    engine.say(text)
-    engine.runAndWait()
-
-def take_command():
-    recognizer = sr.Recognizer()
-    with sr.Microphone() as source:
-        print("Listening...")
-        recognizer.pause_threshold = 1
-        try:
-            audio = recognizer.listen(source)
-            print("Recognizing...")
-            command = recognizer.recognize_google(audio, language='en-US')
-            print(f"You said: {command}")
-        except Exception as e:
-            print("Sorry, I didn't catch that. Please repeat.")
-            return ""
-        return command.lower()
-
 
 # Speak function
 def speak(text):
@@ -178,3 +159,55 @@ log_message("Hello! Moeen, I am JARVIS, your personal assistant. How can I help 
 window.after(1000, continuous_listening)
 
 window.mainloop()
+
+
+
+#####
+
+def speak(text):
+    """Converts text to speech."""
+    engine.say(text)
+    engine.runAndWait()
+
+def take_command():
+    """Listens to the user's voice input and returns it as text."""
+    recognizer = sr.Recognizer()
+    with sr.Microphone() as source:
+        print("Listening...")
+        recognizer.pause_threshold = 1
+        try:
+            audio = recognizer.listen(source)
+            print("Recognizing...")
+            command = recognizer.recognize_google(audio, language='en-US')
+            print(f"You said: {command}")
+        except sr.UnknownValueError:
+            print("Sorry, I didn't catch that. Please repeat.")
+            return ""
+        except sr.RequestError:
+            print("Network error. Please check your internet connection.")
+            return ""
+        return command.lower()
+
+if __name__ == "__main__":
+    # Initialize the text-to-speech engine
+    engine = pyttsx3.init()
+    engine.setProperty('rate', 150)  # Set the speed of speech
+    engine.setProperty('volume', 0.9)  # Set the volume (0.0 to 1.0)
+    voices = engine.getProperty('voices')
+    engine.setProperty('voice', voices[0].id)  # Choose a voice (0 for male, 1 for female, etc.)
+
+    print("Speech Assistant is ready!")
+    speak("Hello! I am your assistant. How can I help you today?")
+
+    while True:
+        command = take_command()
+        if command == "":
+            continue
+
+        # Add responses to specific commands here
+        elif "how are you" in command:
+            speak("I'm doing great, thank you for asking. How about you?")
+        elif "what is your name" in command:
+            speak("I am your speech assistant. You can call me Assistant.")
+        else:
+            speak("I'm sorry, I didn't understand that. Could you please repeat?")
