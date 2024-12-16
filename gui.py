@@ -63,13 +63,14 @@ def shutdown_system():
 def restart_system():
     os.system("shutdown /r /t 1")
 
-# GUI Functions
+# Log messages in the GUI
 def log_message(message):
     output_box.insert(tk.END, message + "\n")
     output_box.see(tk.END)
     if "You said" not in message:  # Speak only non-input messages
         speak(message)
 
+# Execute commands
 def execute_command(command):
     if 'set volume' in command:
         try:
@@ -131,40 +132,29 @@ def execute_command(command):
     else:
         log_message("I didn't understand that. Can you rephrase?")
 
-def voice_command():
-    command = take_command()
-    execute_command(command)
-
-def text_command():
-    command = command_input.get()
-    command_input.delete(0, tk.END)
-    log_message(f"You said: {command}")
-    execute_command(command)
+# Continuous voice listening
+def continuous_listening():
+    while True:
+        command = take_command()
+        if command:
+            execute_command(command)
 
 # Create GUI
 window = tk.Tk()
 window.title("JARVIS Assistant")
-window.geometry("600x400")
+window.geometry("800x500")
+window.configure(bg="#202124")
 
-# Create widgets
-command_label = tk.Label(window, text="Enter Command or Use Voice:")
-command_label.pack()
+# GUI Styling
+header = tk.Label(window, text="JARVIS Assistant", font=("Helvetica", 24), fg="white", bg="#202124")
+header.pack(pady=10)
 
-command_input = tk.Entry(window, width=50)
-command_input.pack()
+output_box = scrolledtext.ScrolledText(window, width=90, height=25, bg="#2D2F31", fg="white", font=("Helvetica", 12))
+output_box.pack(pady=10)
+output_box.insert(tk.END, "JARVIS is ready. Waiting for your command...\n")
 
-text_command_button = tk.Button(window, text="Submit", command=text_command)
-text_command_button.pack()
-
-voice_command_button = tk.Button(window, text="Voice Command", command=voice_command)
-voice_command_button.pack()
-
-output_label = tk.Label(window, text="JARVIS Output:")
-output_label.pack()
-
-output_box = scrolledtext.ScrolledText(window, width=70, height=15)
-output_box.pack()
-
-# Run the assistant
+# Start the assistant
 log_message("Hello! I am JARVIS, your personal assistant. How can I help you?")
+window.after(1000, continuous_listening)
+
 window.mainloop()
