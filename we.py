@@ -57,8 +57,7 @@ def set_volume(level):
     new_volume = min_volume + (max_volume - min_volume) * (level / 100)
     volume.SetMasterVolumeLevel(new_volume, None)
 
-def adjust_brightness(level):
-    sbc.set_brightness(level)
+
 
 def shutdown_system():
     os.system("shutdown /s /t 1")
@@ -83,13 +82,6 @@ def execute_command(command):
         except ValueError:
             log_message("Please specify a valid volume level between 0 and 100.")
 
-    elif 'set brightness' in command:
-        try:
-            level = int(command.replace('set brightness', '').strip())
-            adjust_brightness(level)
-            log_message(f"Brightness set to {level} percent.")
-        except ValueError:
-            log_message("Please specify a valid brightness level between 0 and 100.")
 
     elif 'shutdown' in command:
         log_message("Shutting down the system.")
@@ -98,6 +90,12 @@ def execute_command(command):
     elif 'restart' in command:
         log_message("Restarting the system.")
         restart_system()
+
+    elif "how are you" in command:
+        speak("I'm doing great, thank you for asking. How about you?")
+
+    elif "what is your name" in command:
+        speak("I am your speech assistant. You can call me Assistant.")    
 
     elif 'search wikipedia' in command:
         query = command.replace('search wikipedia', '').strip()
@@ -128,7 +126,7 @@ def execute_command(command):
         log_message("Opening Facebook.")
         webbrowser.open("https://www.facebook.com")
 
-    elif 'exit' in command or 'shut down' in command:
+    elif 'exit' in command or 'quit' in command:
         log_message("Goodbye! Have a great day.")
         window.destroy()
 
