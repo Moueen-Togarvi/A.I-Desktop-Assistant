@@ -4,43 +4,41 @@ import pywhatkit
 import wikipedia
 import datetime
 import webbrowser
+import os
+import subprocess
 from pycaw.pycaw import AudioUtilities, IAudioEndpointVolume
 from comtypes import CLSCTX_ALL
 from ctypes import cast, POINTER
 
 
-##########################################
 
 
+#                                 # Commands #
 
-                                # Commands #
+# # apna name batany ky liye  "my name is (your name)"                                
 
-# apna name batany ky liye  "my name is (your name)"                                
+# # For Time      "Time"
 
-# For Time      "Time"
+# # for asking name     "What is your name"
 
-# for asking name     "What is your name"
+# # for asking my name     "What is my name"
 
-# for asking my name     "What is my name"
+# # for search wikipedia      "Search Wikipedia"
 
-# for search wikipedia      "Search Wikipedia"
+# # for Search Google         "Search Google"
 
-# for Search Google         "Search Google"
+# # for Set Volume        "Set Volume (e.g 90)"
 
-# for Set Volume        "Set Volume (e.g 90)"
+# # "How are you"
 
-# "How are you"
+# # for playing any video on yt   "Youtube (any name of video or channel)"
 
-# for playing any video on yt   "Youtube (any name of video or channel)"
-
-# For open any website             "open(name any website)"
+# # For open any website             "open(name any website)"
 
 
 
 
 
-
-## Voice Configure
 
 # Initialize voice engine
 engine = pyttsx3.init()
@@ -48,7 +46,7 @@ engine = pyttsx3.init()
 def configure_voice():
     voices = engine.getProperty('voices')
     engine.setProperty('voice', voices[0].id)  # Male voice
-    engine.setProperty('rate', 150)  
+    engine.setProperty('rate', 150)
 
 configure_voice()
 
@@ -56,14 +54,6 @@ def speak(text):
     print(f"JARVIS: {text}")  # Output to terminal
     engine.say(text)
     engine.runAndWait()
-
-### Voice
-
-
-
-
-
-
 
 # Global variables
 user_name = ""
@@ -81,32 +71,19 @@ def take_command():
             speak("Sorry, I didn't catch that. Please repeat.")
             return ""
         return command.lower()
-    
-
-
-
-
-
-## Set Volume Function to Set Volume Of System
 
 def set_volume(level):
-    devices = AudioUtilities.GetSpeakers()
-    interface = devices.Activate(IAudioEndpointVolume._iid_, CLSCTX_ALL, None)
-    volume = cast(interface, POINTER(IAudioEndpointVolume))
-    volume_range = volume.GetVolumeRange()  # Min and max volume levels
-    min_volume, max_volume = volume_range[0], volume_range[1]
-    new_volume = min_volume + (max_volume - min_volume) * (level / 100)
-    volume.SetMasterVolumeLevel(new_volume, None)
-    speak(f"Volume set to {level} percent.")
-
-
-
-
-
-
-
-
-## Basic Commands 
+    try:
+        devices = AudioUtilities.GetSpeakers()
+        interface = devices.Activate(IAudioEndpointVolume._iid_, CLSCTX_ALL, None)
+        volume = cast(interface, POINTER(IAudioEndpointVolume))
+        volume_range = volume.GetVolumeRange()  # Min and max volume levels
+        min_volume, max_volume = volume_range[0], volume_range[1]
+        new_volume = min_volume + (max_volume - min_volume) * (level / 100)
+        volume.SetMasterVolumeLevel(new_volume, None)
+        speak(f"Volume set to {level} percent.")
+    except Exception as e:
+        speak(f"Unable to set volume. Error: {e}")
 
 def execute_command(command):
     global user_name
@@ -122,12 +99,10 @@ def execute_command(command):
             speak("I don't know your name yet. Please tell me by saying 'My name is ...'.")
 
     elif 'what is your name' in command:
-        if user_name:
-            speak(f"Your name is Jarvis. I am your Assistant.")
+        speak("My name is Jarvis. I am your assistant.")
 
-    elif 'How are You?' in command:
-        if user_name:
-            speak(f"I am Fine.Thanks For asking?")        
+    elif 'how are you' in command:
+        speak("I am fine, thank you. How can I assist you today?")
 
     elif 'set volume' in command:
         try:
@@ -159,30 +134,32 @@ def execute_command(command):
 
     elif 'open' in command:
         website = command.replace('open', '').strip().lower()
-        url = f"{website}" if '.' not in website else website
+        url = f"https://{website}.com" if '.' not in website else website
         webbrowser.open(url)
         speak(f"Opening website: {url}")
 
-    elif 'Youtube' in command:
-        query = command.replace("Youtube", "").strip()
-        pywhatkit.playonyt(query)
-        speak(f"Playing {query} on YouTube.")
+    elif 'youtube' in command:
+        song = command.replace('youtube', '').strip()
+        speak(f"Playing {song} on YouTube.")
+        pywhatkit.playonyt(song)
+
+    elif 'shutdown system' in command:
+        speak("Shutting down the system. Goodbye!")
+        os.system('shutdown /s /t 1')
+
+    elif 'restart system' in command:
+        speak("Restarting the system. Please wait.")
+        os.system('shutdown /r /t 1')
 
     elif 'exit' in command:
         speak("Goodbye! Have a great day.")
         exit()
+
     else:
         speak("I didn't understand that. Please rephrase.")
 
-
-
-
-
-
-## initially Speech
-
 def main():
-    speak("Salaam! I am JARVIS, I am your Assistant.")
+    speak("Salaam! I am JARVIS, your assistant. How can I help you today?")
     while True:
         command = take_command()
         if command:
@@ -190,6 +167,4 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
 

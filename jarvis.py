@@ -1,105 +1,150 @@
 import pyttsx3
 import speech_recognition as sr
-import os
-import pywhatkit
 import wikipedia
 import datetime
-import webbrowser
+import os
+import subprocess
+import socket
+from pycaw.pycaw import AudioUtilities, IAudioEndpointVolume
+from comtypes import CLSCTX_ALL
+from ctypes import cast, POINTER
 
-# Initialize the voice engine
+# Initialize voice engine
 engine = pyttsx3.init()
 
-# Configure voice settings
 def configure_voice():
     voices = engine.getProperty('voices')
-    engine.setProperty('voice', voices[0].id)  # Use male voice
-    engine.setProperty('rate', 150)  # Set speech rate
+    engine.setProperty('voice', voices[0].id)  # Male voice
+    engine.setProperty('rate', 150)
 
 configure_voice()
 
-# Function to make JARVIS speak
 def speak(text):
+    print(f"JARVIS: {text}")  # Output to terminal
     engine.say(text)
     engine.runAndWait()
 
-# Function to listen to user commands
+# Global variables
+user_name = ""
+
 def take_command():
     recognizer = sr.Recognizer()
     with sr.Microphone() as source:
         print("Listening...")
-        recognizer.pause_threshold = 1
         try:
             audio = recognizer.listen(source)
             print("Recognizing...")
             command = recognizer.recognize_google(audio, language='en-US')
-            print(f"You said: {command}")
-        except Exception as e:
-            print("Sorry, I didn't catch that. Please repeat.")
+            print(f"You: {command}")
+        except sr.UnknownValueError:
+            speak("Sorry, I didn't catch that. Please repeat.")
             return ""
         return command.lower()
 
-# Main function for JARVIS
-def jarvis():
-    speak("Hello! I am JARVIS, your personal assistant. How can I help you?")
+def check_internet():
+    try:
+        socket.create_connection(("8.8.8.8", 53), timeout=5)
+        return True
+    except OSError:
+        return False
+
+def set_volume(level):
+    try:
+        devices = AudioUtilities.GetSpeakers()
+        interface = devices.Activate(IAudioEndpointVolume._iid_, CLSCTX_ALL, None)
+        volume = cast(interface, POINTER(IAudioEndpointVolume))
+        volume_range = volume.GetVolumeRange()  # Min and max volume levels
+        min_volume, max_volume = volume_range[0], volume_range[1]
+        new_volume = min_volume + (max_volume - min_volume) * (level / 100)
+        volume.SetMasterVolumeLevel(new_volume, None)
+        speak(f"Volume set to {level} percent.")
+    except Exception as e:
+        speak(f"Unable to set volume. Error: {e}")
+
+def execute_command(command):
+    global user_name
+
+    if 'my name is' in command:
+        user_name = command.replace('my name is', '').strip().capitalize()
+        speak(f"Hello, {user_name}! Nice to meet you.")
+
+    elif 'what is my name' in command:
+        if user_name:
+            speak(f"Your name is {user_name}.")
+        else:
+            speak("I don't know your name yet. Please tell me by saying 'My name is ...'.")
+
+    elif 'what is your name' in command:
+        speak("My name is Jarvis. I am your assistant.")
+
+    elif 'how are you' in command:
+        speak("I am fine, thank you. How can I assist you today?")
+
+    elif 'set volume' in command:
+        try:
+            level = int(command.replace('set volume', '').strip())
+            if 0 <= level <= 100:
+                set_volume(level)
+            else:
+                speak("Please specify a valid volume level between 0 and 100.")
+        except ValueError:
+            speak("Please specify a valid volume level between 0 and 100.")
+
+    elif 'time' in command:
+        current_time = datetime.datetime.now().strftime('%I:%M %p')
+        speak(f"The current time is {current_time}.")
+
+    elif 'search wikipedia' in command:
+        if check_internet():
+            query = command.replace('search wikipedia', '').strip()
+            speak(f"Searching Wikipedia for {query}...")
+            try:
+                result = wikipedia.summary(query, sentences=2)
+                speak(f"According to Wikipedia: {result}")
+            except Exception:
+                speak("Sorry, no information found.")
+        else:
+            speak("Sorry, Wikipedia search is unavailable in offline mode.")
+
+    elif 'open' in command:
+        if check_internet():
+            website = command.replace('open', '').strip().lower()
+            url = f"https://{website}.com" if '.' not in website else website
+            subprocess.Popen(["xdg-open", url]) if os.name == 'posix' else os.system(f"start {url}")
+            speak(f"Opening {website}.")
+        else:
+            speak("Sorry, I cannot open websites in offline mode.")
+
+    elif 'youtube' in command:
+        if check_internet():
+            query = command.replace('youtube', '').strip()
+            url = f"https://www.youtube.com/results?search_query={query}"
+            subprocess.Popen(["xdg-open", url]) if os.name == 'posix' else os.system(f"start {url}")
+            speak(f"Playing {query} on YouTube.")
+        else:
+            speak("Sorry, YouTube playback is not available in offline mode.")
+
+    elif 'shutdown system' in command:
+        speak("Shutting down the system. Goodbye!")
+        os.system('shutdown /s /t 1')
+
+    elif 'restart system' in command:
+        speak("Restarting the system. Please wait.")
+        os.system('shutdown /r /t 1')
+
+    elif 'exit' in command:
+        speak("Goodbye! Have a great day.")
+        exit()
+
+    else:
+        speak("I didn't understand that. Please rephrase.")
+
+def main():
+    speak("Salaam! I am JARVIS, your assistant. How can I help you today?")
     while True:
         command = take_command()
+        if command:
+            execute_command(command)
 
-        # Exit the assistant
-        if 'shut down' in command or 'exit' in command:
-            speak("Goodbye! Have a great day.")
-            break
-
-        # Open a specific file
-        # elif 'open file' in command:
-        #     file_path = "C:\\Users\\YourUserName\\Documents\\example.txt"  # Update with your file path
-        #     os.startfile(file_path)
-        #     speak("Opening the file.")
-        elif 'open file' in command:
-            file_name = command.replace('open file', '').strip()  # Extract file name
-            file_path = f"E:\\{file_name}.txt"  # Build path in E:\ drive
-            try:
-                os.startfile(file_path)  # Try opening the file
-                speak(f"Opening file {file_name}")
-            except FileNotFoundError:
-                speak(f"Sorry, I could not find the file {file_name} in the E drive.")
-        # Play a song on YouTube
-        elif 'play' in command:
-            song = command.replace('play ', '')
-            pywhatkit.playonyt(song)
-            speak(f"Playing {song} on YouTube.")
-
-        # Tell the current time
-        elif 'what time is it' in command:
-            current_time = datetime.datetime.now().strftime('%I:%M %p')
-            speak(f"The current time is {current_time}.")
-
-        # Search Wikipedia
-        elif 'search' in command:
-            query = command.replace('search', '')
-            result = wikipedia.summary(query, sentences=2)
-            speak("According to Wikipedia")
-            speak(result)
-
-        # Open social media platforms
-        elif 'open facebook' in command:
-            webbrowser.open("https://www.facebook.com")
-            speak("Opening Facebook.")
-        elif 'open instagram' in command:
-            webbrowser.open("https://www.instagram.com")
-            speak("Opening Instagram.")
-        elif 'open twitter' in command:
-            webbrowser.open("https://www.twitter.com")
-            speak("Opening Twitter.")
-
-        # Open browser
-        elif 'open browser' in command:
-            webbrowser.open("https://www.google.com")
-            speak("Opening browser.")
-
-        # General message for unsupported commands
-        else:
-            speak("I didn't understand that command. Can you repeat?")
-
-# Run the assistant
 if __name__ == "__main__":
-    jarvis()
+    main()

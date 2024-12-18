@@ -117,8 +117,8 @@ def execute_command(command):
         current_time = datetime.datetime.now().strftime('%I:%M %p')
         log_message(f"The current time is {current_time}.")
 
-    elif 'play song' in command:
-        query = command.replace('play song', '').strip()
+    elif 'youtube ' in command:
+        query = command.replace('youtube', '').strip()
         log_message(f"Playing {query} on YouTube.")
         pywhatkit.playonyt(query)
 
