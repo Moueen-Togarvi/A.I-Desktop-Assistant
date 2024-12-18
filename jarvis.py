@@ -10,8 +10,16 @@ from pycaw.pycaw import AudioUtilities, IAudioEndpointVolume
 from comtypes import CLSCTX_ALL
 from ctypes import cast, POINTER
 import pywhatkit
+
+
+
 # Initialize voice engine
 engine = pyttsx3.init()
+
+
+
+
+
 
 def configure_voice():
     voices = engine.getProperty('voices')
@@ -19,6 +27,9 @@ def configure_voice():
     engine.setProperty('rate', 150)
 
 configure_voice()
+
+
+
 
 def speak(text):
     print(f"JARVIS: {text}")  # Output to terminal
@@ -38,7 +49,7 @@ def take_command():
             command = recognizer.recognize_google(audio, language='en-US')
             print(f"You: {command}")
         except sr.UnknownValueError:
-            speak("Sorry, I didn't catch that. Please repeat.")
+            # speak("Sorry, I didn't catch that. Please repeat.")
             return ""
         return command.lower()
     
@@ -66,6 +77,12 @@ def set_volume(level):
 def execute_command(command):
     global user_name
 
+    if 'silent' in command.lower():
+        set_volume(0)
+        speak("Volume has been set to silent mode.")
+    
+
+
     if 'my name is' in command:
         user_name = command.replace('my name is', '').strip().capitalize()
         speak(f"Hello, {user_name}! Nice to meet you.")
@@ -82,6 +99,11 @@ def execute_command(command):
     elif 'how are you' in command  or 'how r u' in command:
         speak("I am fine, thank you. How can I assist you today?")
 
+    elif 'set silent' in command.lower():
+        set_volume(0)
+        speak("Volume has been set to silent mode.")
+    
+
     elif 'set volume' in command:
         try:
             level = int(command.replace('set volume', '').strip())
@@ -92,7 +114,7 @@ def execute_command(command):
         except ValueError:
             speak("Please specify a valid volume level between 0 and 100.")
 
-    elif 'time' in command:
+    elif 'current time' in command:
         current_time = datetime.datetime.now().strftime('%I:%M %p')
         speak(f"The current time is {current_time}.")
 
