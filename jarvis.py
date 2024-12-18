@@ -3,12 +3,13 @@ import speech_recognition as sr
 import wikipedia
 import datetime
 import os
+import webbrowser
 import subprocess
 import socket
 from pycaw.pycaw import AudioUtilities, IAudioEndpointVolume
 from comtypes import CLSCTX_ALL
 from ctypes import cast, POINTER
-
+import pywhatkit
 # Initialize voice engine
 engine = pyttsx3.init()
 
@@ -77,7 +78,7 @@ def execute_command(command):
     elif 'what is your name' in command:
         speak("My name is Jarvis. I am your assistant.")
 
-    elif 'how are you' in command:
+    elif 'how are you' in command  or 'how r u' in command:
         speak("I am fine, thank you. How can I assist you today?")
 
     elif 'set volume' in command:
@@ -108,19 +109,21 @@ def execute_command(command):
 
     elif 'open' in command:
         if check_internet():
-            website = command.replace('open', '').strip().lower()
-            url = f"https://{website}.com" if '.' not in website else website
-            subprocess.Popen(["xdg-open", url]) if os.name == 'posix' else os.system(f"start {url}")
-            speak(f"Opening {website}.")
+            query = command.replace('search google', '').strip()
+            webbrowser.open(f"https://www.google.com/search?q={query}")
+            speak(f"Searching Google for {query}...")
         else:
             speak("Sorry, I cannot open websites in offline mode.")
 
     elif 'youtube' in command:
         if check_internet():
-            query = command.replace('youtube', '').strip()
-            url = f"https://www.youtube.com/results?search_query={query}"
-            subprocess.Popen(["xdg-open", url]) if os.name == 'posix' else os.system(f"start {url}")
-            speak(f"Playing {query} on YouTube.")
+            # query = command.replace('youtube', '').strip()
+            # url = f"https://www.youtube.com/results?search_query={query}"
+            # subprocess.Popen(["xdg-open", url]) if os.name == 'posix' else os.system(f"start {url}")
+            # speak(f"Playing {query} on YouTube.")
+            song = command.replace('youtube', '').strip()
+            speak(f"Playing {song} on YouTube.")
+            pywhatkit.playonyt(song)
         else:
             speak("Sorry, YouTube playback is not available in offline mode.")
 
