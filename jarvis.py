@@ -43,20 +43,6 @@ def take_command():
         return command.lower()
     
 
-
-
-import openai
-
-openai.api_key = "YOUR_API_KEY"
-
-def ask_gpt(prompt):
-    response = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo",
-        messages=[{"role": "user", "content": prompt}]
-    )
-    return response['choices'][0]['message']['content']
-
-
 def check_internet():
     try:
         socket.create_connection(("8.8.8.8", 53), timeout=5)
@@ -110,12 +96,7 @@ def execute_command(command):
         current_time = datetime.datetime.now().strftime('%I:%M %p')
         speak(f"The current time is {current_time}.")
 
-    elif 'Chat with ai' in command:
-        if check_internet():
-            query = command.replace('ask gpt', '').strip()
-            gpt_response = ask_gpt(query)
-            speak(gpt_response)
-
+   
 
     elif 'search wikipedia' in command:
         if check_internet():
